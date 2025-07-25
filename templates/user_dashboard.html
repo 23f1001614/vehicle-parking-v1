@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Welcome, {{ current_user.Full_name }}</h2>
+        
+        {% if active_reservations %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Active Reservations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Parking Lot</th>
+                                <th>Spot Number</th>
+                                <th>Vehicle</th>
+                                <th>Check-in Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in active_reservations %}
+                            <tr>
+                                <td>{{ res.spot.lot.name }}</td>
+                                <td>{{ res.spot.spot_number }}</td>
+                                <td>{{ res.vehicle_number }}</td>
+                                <td>{{ res.check_in.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('release_spot', reservation_id=res.id) }}" 
+                                       class="btn btn-sm btn-warning"
+                                       onclick="return confirm('Are you sure you want to release this spot?')">
+                                        Release Spot
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Find Parking</h5>
+            </div>
+            <div class="card-body">
+                <p>Looking for a parking spot?</p>
+                <a href="{{ url_for('find_parking') }}" class="btn btn-primary">Find Available Parking</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Recent History</h5>
+            </div>
+            <div class="card-body">
+                {% if past_reservations %}
+                <ul class="list-group">
+                    {% for res in past_reservations %}
+                    <li class="list-group-item">
+                        <strong>{{ res.spot.lot.name }}</strong><br>
+                        {{ res.check_in.strftime('%b %d') }} - {{ res.check_out.strftime('%b %d') if res.check_out else 'Active' }}<br>
+                        ₹{{ res.amount_paid or '0.00' }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No past reservations found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

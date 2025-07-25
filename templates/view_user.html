@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}View Users{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Registered Users</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <strong>All Users</strong>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Mobile</th>
+                            <th scope="col">Gender</th>
+                            <th scope="col">Reservations</th>
+                            <th scope="col">Active Spots</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.Full_name }}</td>
+                            <td>{{ user.Email }}</td>
+                            <td>{{ user.Mobile }}</td>
+                            <td>{{ user.Gender }}</td>
+                            <td>{{ user.reservations|length }}</td>
+                            <td>
+                                {% set active_reservations = user.reservations | selectattr('check_out', '==', none) | list %}
+                                {% if active_reservations %}
+                                    <ul class="mb-0">
+                                        {% for res in active_reservations %}
+                                            <li>
+                                                Spot: {{ res.spot.spot_number }}, 
+                                                Lot: {{ res.spot.lot.parking_location_name }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
