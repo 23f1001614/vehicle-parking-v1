@@ -35,7 +35,7 @@
                             <td>{{ lot.Maximum_number_of_spot }} ({{ lot.spots|selectattr('status', 'equalto', 'A')|list|length }} available)</td>
                             <td>
                                 <a href="{{ url_for('view_lot', lot_id=lot.id) }}" class="btn btn-sm btn-primary">View</a>
-                                <a href="{{ url_for('login', lot_id=lot.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="{{ url_for('edit_lot', lot_id=lot.id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 <a href="{{ url_for('delete_lot', lot_id=lot.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this parking lot?')">Delete</a>
                             </td>
                         </tr>

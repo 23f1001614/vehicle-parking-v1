@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Find Parking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Find Available Parking</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="pincode" class="form-label">Filter by Pin Code (optional)</label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Enter pin code">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vehicle_number" class="form-label">Your Vehicle Number</label>
+                            <input type="text" class="form-control" id="vehicle_number" name="vehicle_number" required>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Find Parking</button>
+                    </div>
+                </form>
+                
+                {% if lots %}
+                <hr>
+                <h5 class="mt-4">Available Parking Lots</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Parking Lot</th>
+                                <th>Address</th>
+                                <th>Price/Hour</th>
+                                <th>Available Spots</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lot in lots %}
+                            <tr>
+                                <td>{{ lot.lot.parking_location_name }}</td>
+                                <td>{{ lot.lot.Address }}, {{ lot.lot.Pincode }}</td>
+                                <td>₹{{ lot.lot.price_per_hour }}</td>
+                                <td>{{ lot.available_spots }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('reserve_spot', lot_id=lot.lot.id) }}">
+                                        <input type="hidden" name="vehicle_number" value="{{ vehicle_number }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Reserve Spot</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

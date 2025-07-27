@@ -6,7 +6,7 @@
     <div class="col-md-8">
         <h2>Welcome, {{ current_user.Full_name }}</h2>
         
-        {% if active_reservations %}
+        {% if active_reservation %}
         <div class="card mb-4">
             <div class="card-header">
                 <h5>Active Reservations</h5>
@@ -24,9 +24,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for res in active_reservations %}
+                            {% for res in active_reservation %}
                             <tr>
-                                <td>{{ res.spot.lot.name }}</td>
+                                <td>{{ res.spot.lot.parking_location_name }}</td>
                                 <td>{{ res.spot.spot_number }}</td>
                                 <td>{{ res.vehicle_number }}</td>
                                 <td>{{ res.check_in.strftime('%Y-%m-%d %H:%M') }}</td>
@@ -63,11 +63,11 @@
                 <h5>Recent History</h5>
             </div>
             <div class="card-body">
-                {% if past_reservations %}
+                {% if past_reservation %}
                 <ul class="list-group">
-                    {% for res in past_reservations %}
+                    {% for res in past_reservation %}
                     <li class="list-group-item">
-                        <strong>{{ res.spot.lot.name }}</strong><br>
+                        <strong>{{ res.spot.lot.parking_location_name }}</strong><br>
                         {{ res.check_in.strftime('%b %d') }} - {{ res.check_out.strftime('%b %d') if res.check_out else 'Active' }}<br>
                         ₹{{ res.amount_paid or '0.00' }}
                     </li>

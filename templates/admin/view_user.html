@@ -31,9 +31,9 @@
                             <td>{{ user.Email }}</td>
                             <td>{{ user.Mobile }}</td>
                             <td>{{ user.Gender }}</td>
-                            <td>{{ user.reservations|length }}</td>
+                            <td>{{ user.Reservations|length }}</td>
                             <td>
-                                {% set active_reservations = user.reservations | selectattr('check_out', '==', none) | list %}
+                                {% set active_reservations = user.Reservations | selectattr('check_out', '==', none) | list %}
                                 {% if active_reservations %}
                                     <ul class="mb-0">
                                         {% for res in active_reservations %}

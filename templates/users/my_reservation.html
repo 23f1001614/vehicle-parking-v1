@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Welcome, {{ current_user.Full_name }}</h2>
+
+        {% if active_reservation %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Active Reservations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Parking Lot</th>
+                                <th>Spot Number</th>
+                                <th>Vehicle</th>
+                                <th>Check-in Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in active_reservation %}
+                            <tr>
+                                <td>{{ res.spot.lot.parking_location_name }}</td>
+                                <td>{{ res.spot.spot_number }}</td>
+                                <td>{{ res.vehicle_number }}</td>
+                                <td>{{ res.check_in.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    <a href="{{ url_for('release_spot', reservation_id=res.id) }}" 
+                                       class="btn btn-sm btn-warning"
+                                       onclick="return confirm('Are you sure you want to release this spot?')">
+                                        Release Spot
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted">No active reservations.</p>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Recent History</h5>
+            </div>
+            <div class="card-body">
+                {% if past_reservation %}
+                <ul class="list-group">
+                    {% for res in past_reservation %}
+                    <li class="list-group-item">
+                        <strong>{{ res.spot.lot.parking_location_name }}</strong><br>
+                        Check-in: {{ res.check_in.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                        Check-out: {{ res.check_out.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                        Duration: {{ res.duration_minutes }} minutes ({{ res.duration_hours }} hrs)<br>
+                        Paid: ₹{{ res.amount_paid or '0.00' }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No past reservations found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

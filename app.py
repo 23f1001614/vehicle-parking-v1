@@ -25,6 +25,7 @@ class User(db.Model, UserMixin):
     Mobile = db.Column(db.String(10), unique=True, nullable=False)
     Gender = db.Column(db.String(6))
     Role = db.Column(db.String, default="User")
+    Reservations = db.relationship('Reservation', backref='user', lazy=True)
 
     def set_password(self, password):
         self.User_password = generate_password_hash(password)
@@ -67,7 +68,7 @@ class Reservation(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 def admin_required(f):
@@ -160,27 +161,10 @@ def admin_dashboard():
     available_spots = ParkingSpot.query.filter_by(status='A').count()
     occupied_spots = ParkingSpot.query.filter_by(status='O').count()
     users_count = User.query.filter_by(Role="User").count()
-    return render_template("admin_dashboard.html", lots=lots,
+    return render_template("admin/admin_dashboard.html", lots=lots,
                            available_spots=available_spots,
                            occupied_spots=occupied_spots,
                            users_count=users_count)
-
-
-@app.route('/user/dashboard')
-@login_required
-def user_dashboard():
-    if current_user.Role != "User":
-        return redirect(url_for('admin_dashboard'))
-
-    active_reservation = Reservation.query.filter_by(user_id=current_user.id, check_out=None).all()
-    past_reservation = Reservation.query.filter(
-        Reservation.user_id == current_user.id,
-        Reservation.check_out != None
-    ).order_by(Reservation.check_in.desc()).limit(5).all()
-
-    return render_template('user_dashboard.html',
-                           active_reservation=active_reservation,
-                           past_reservation=past_reservation)
 
 
 @app.route("/admin/create_lot", methods=['GET', 'POST'])
@@ -210,7 +194,7 @@ def create_lot():
         db.session.commit()
         flash("Parking lot created successfully!", "success")
         return redirect(url_for('admin_dashboard'))
-    return render_template("create_lot.html")
+    return render_template("admin/create_lot.html")
 
 
 @app.route("/admin/manage_lots", methods=['GET', 'POST'])
@@ -218,7 +202,7 @@ def create_lot():
 @admin_required
 def manage_lots():
     lots = ParkingLot.query.all()
-    return render_template("manage_lots.html", lots=lots)
+    return render_template("admin/manage_lots.html", lots=lots)
 
 
 @app.route("/admin/view_lot/<int:lot_id>", methods=["GET", "POST"])
@@ -227,7 +211,7 @@ def manage_lots():
 def view_lot(lot_id):
     lot = ParkingLot.query.get_or_404(lot_id)
     spots_ = ParkingSpot.query.filter_by(Lot_id=lot_id).all()
-    return render_template("view_lot.html", lot=lot, spots=spots_)
+    return render_template("admin/view_lot.html", lot=lot, spots=spots_)
 
 
 @app.route("/admin/delete_lot/<int:lot_id>", methods=["GET", "POST"])
@@ -251,7 +235,7 @@ def delete_lot(lot_id):
 @admin_required
 def view_users():
     users = User.query.filter_by(Role="User").all()
-    return render_template("view_user.html", users=users)
+    return render_template("admin/view_user.html", users=users)
 
 @app.route("/admin/edit_lot/<int:lot_id>", methods=["GET", "POST"])
 @login_required
@@ -301,37 +285,91 @@ def edit_lot(lot_id):
         flash('Parking lot updated successfully!', 'success')
         return redirect(url_for('view_lot', lot_id=lot.id))
 
-    return render_template("edit_lot.html", lot=lot, current_spots=current_total)
+    return render_template("admin/edit_lot.html", lot=lot, current_spots=current_total)
 
 
+@app.route('/user/dashboard')
+@login_required
+def user_dashboard():
+    active_reservation = Reservation.query.filter_by(user_id=current_user.id ,check_out=None).all() 
+    past_reservation = Reservation.query.filter(
+        Reservation.user_id == current_user.id,
+        Reservation.check_out != None
+    ).order_by(Reservation.check_in.desc()).limit(5).all()
+
+    return render_template('users/user_dashboard.html',
+                           active_reservation=active_reservation,
+                           past_reservation=past_reservation)
 
 
-
-# @app.route('/admin/users')
-# @login_required
-# @admin_required
-# def manage_users():
-#     return "Manage Users Page"
-
-
-@app.route('/user/find-parking')
+@app.route('/user/find_parking', methods=["GET", "POST"])
 @login_required
 def find_parking():
-    return "Find Parking Page"
+    if request.method == "POST":
+        pincode= request.form["pincode"]
+        vehicle_number= request.form["vehicle_number"]
+        if pincode:
+            lots= ParkingLot.query.filter_by(Pincode=pincode)
+        else:
+            lots= ParkingLot.query.all()
+        available_lots=[]
+        for lot in lots:
+            available_spots=ParkingSpot.query.filter_by(Lot_id=lot.id, status="A").count()
+            if available_spots>0:
+                available_lots.append({
+                    "lot": lot,
+                    'available_spots': available_spots
+                })
+        return render_template("users/find_parking.html", lots=available_lots, vehicle_number=vehicle_number)
+    return render_template("users/find_parking.html")
 
-
-@app.route('/user/my-reservations')
+@app.route('/user/reserve_spot/<int:lot_id>', methods=["GET", "POST"])
 @login_required
-def my_reservations():
-    return "My Reservations Page"
+def reserve_spot(lot_id):
+    vehicle_number= request.form["vehicle_number"]
+    spot=ParkingSpot.query.filter_by(Lot_id=lot_id, status="A").first()
+    if not spot:
+        flash("No available spots in this lot", "danger")
+        return redirect(url_for("find_parking"))
+    lot = ParkingLot.query.get(lot_id)
+    reservation= Reservation(spot_id=spot.id, user_id=current_user.id,
+                             check_in=datetime.datetime.now(),
+                             vehicle_number=vehicle_number)
+    spot.status="O"
+    db.session.add(reservation)
+    db.session.commit()
+    flash(f'Spot {spot.spot_number} reserved successfully at {lot.parking_location_name}.',"success")
+    return redirect(url_for("user_dashboard"))
 
 
+@app.route('/user/release_spot/<int:reservation_id>', methods=["GET", "POST"])
+@login_required
+def release_spot(reservation_id):
+    reservation=Reservation.query.get_or_404(reservation_id)
+    lot=reservation.spot.lot
+    time_parked=datetime.datetime.now()-reservation.check_in
+    hours_parked= max(1, time_parked.total_seconds()/3600)
+    amount=round(hours_parked* lot.price_per_hour,2)
+    reservation.check_out=datetime.datetime.now()
+    reservation.amount_paid=amount
+    reservation.spot.status="A"
+    db.session.commit()
+    return redirect(url_for("user_dashboard"))
+@app.route('/user/bookings')
+@login_required
+def my_reservation():
+    active_reservation = Reservation.query.filter_by(user_id=current_user.id ,check_out=None).all() 
+    past_reservation = Reservation.query.filter(
+        Reservation.user_id == current_user.id,
+        Reservation.check_out != None).all()
+    for res in past_reservation:
+        duration = res.check_out - res.check_in
+        res.duration_minutes = int(duration.total_seconds() // 60)
+        res.duration_hours = round(duration.total_seconds() / 3600, 2)
 
-if __name__ == "__main__":
-    create_admin()
-    app.run(debug=True)
-
-
+    return render_template('users/my_reservation.html',
+                           active_reservation=active_reservation,
+                           past_reservation=past_reservation)
 
 
 
