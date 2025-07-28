@@ -359,13 +359,20 @@ def release_spot(reservation_id):
     reservation=Reservation.query.get_or_404(reservation_id)
     lot=reservation.spot.lot
     time_parked=datetime.datetime.now()-reservation.check_in
-    hours_parked= max(1, time_parked.total_seconds()/3600)
-    amount=round(hours_parked* lot.price_per_hour,2)
-    reservation.check_out=datetime.datetime.now()
-    reservation.amount_paid=amount
-    reservation.spot.status="A"
-    db.session.commit()
-    return redirect(url_for("user_dashboard"))
+    hours_parked= time_parked.total_seconds()/3600
+    amount=round(max(1,hours_parked)* lot.price_per_hour,2)
+    if request.method == "POST":
+        reservation.check_out=datetime.datetime.now()
+        reservation.amount_paid=amount
+        reservation.spot.status="A"
+        db.session.commit()
+        flash(f"Payment of ₹{amount} paid successfully and Spot {reservation.spot.spot_number} has been released.\nThank you for using our service.", "success")
+        return redirect(url_for("user_dashboard"))
+    return render_template("payment.html",
+                           reservation=reservation,
+                           hours=int(hours_parked),
+                           minutes=int((time_parked.total_seconds() % 3600) / 60),
+                           total_amount=amount)
 @app.route('/user/bookings')
 @login_required
 def my_reservation():

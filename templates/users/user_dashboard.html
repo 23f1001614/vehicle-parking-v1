@@ -31,11 +31,9 @@
                                 <td>{{ res.vehicle_number }}</td>
                                 <td>{{ res.check_in.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
-                                    <a href="{{ url_for('release_spot', reservation_id=res.id) }}" 
-                                       class="btn btn-sm btn-warning"
-                                       onclick="return confirm('Are you sure you want to release this spot?')">
-                                        Release Spot
-                                    </a>
+                                    <a href="{{ url_for('release_spot', reservation_id=res.id) }}"
+                                    class="btn btn-sm btn-warning"  onclick="return confirm('Proceed to payment and release the spot?')">
+                                    Check-Out</a>
                                 </td>
                             </tr>
                             {% endfor %}

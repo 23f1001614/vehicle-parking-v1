@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Payment{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header">
+            <h4>Payment Summary</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Parking Lot:</strong> {{ reservation.spot.lot.parking_location_name }}</p>
+            <p><strong>Spot Number:</strong> {{ reservation.spot.spot_number }}</p>
+            <p><strong>Vehicle Number:</strong> {{ reservation.vehicle_number }}</p>
+            <p><strong>Check-In:</strong> {{ reservation.check_in.strftime('%Y-%m-%d %H:%M') }}</p>
+            <hr>
+            <p><strong>Parked Duration:</strong> {{ hours }} hr {{ minutes }} min</p>
+            <p><strong>Total Amount to Pay:</strong> ₹{{ total_amount }}</p>
+
+            <form method="POST">
+                <button type="submit" class="btn btn-success">Pay ₹{{ total_amount }}</button>
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
