@@ -237,6 +237,17 @@ def view_users():
     users = User.query.filter_by(Role="User").all()
     return render_template("admin/view_user.html", users=users)
 
+@app.route('/admin/user/<int:user_id>/reservations')
+@login_required
+@admin_required
+def admin_user_reservations(user_id):
+    user = User.query.get_or_404(user_id)
+
+    all_reservations = Reservation.query.filter_by(user_id=user.id).order_by(Reservation.check_in.desc()).all()
+
+    return render_template('admin/admin_user_reservation.html', user=user, reservations=all_reservations)
+
+
 @app.route("/admin/edit_lot/<int:lot_id>", methods=["GET", "POST"])
 @login_required
 @admin_required

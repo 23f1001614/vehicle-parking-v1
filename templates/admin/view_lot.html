@@ -58,6 +58,7 @@
                                     {% set reservation = spot.reservations|selectattr('check_out', 'none')|first %}
                                     {% if reservation %}
                                         <br>Vehicle: {{ reservation.vehicle_number }}
+                                        <br>Booked for: {{ reservation.user.Full_name}}
                                     {% endif %}
                                 {% endif %}
                             </p>

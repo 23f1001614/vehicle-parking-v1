@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ user.Full_name }} - Parking History{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Parking History for {{ user.Full_name }}</h2>
+
+    {% if reservations %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Parking Lot</th>
+                    <th scope="col">Spot Number</th>
+                    <th scope="col">Vehicle</th>
+                    <th scope="col">Check-in</th>
+                    <th scope="col">Check-out</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Amount Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations %}
+                <tr>
+                    <td>{{ res.spot.lot.parking_location_name }}</td>
+                    <td>{{ res.spot.spot_number }}</td>
+                    <td>{{ res.vehicle_number }}</td>
+                    <td>{{ res.check_in.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if res.check_out %}
+                            {{ res.check_out.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            <span class="text-warning">Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if res.check_out %}
+                            {% set duration = res.check_out - res.check_in %}
+                            {{ duration.total_seconds() // 3600 }} hrs 
+                            {{ (duration.total_seconds() % 3600) // 60 }} min
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>₹{{ res.amount_paid or "0.00" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No reservations found for this user.</p>
+    {% endif %}
+</div>
+{% endblock %}

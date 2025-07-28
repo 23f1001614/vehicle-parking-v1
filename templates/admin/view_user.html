@@ -27,7 +27,11 @@
                         {% for user in users %}
                         <tr>
                             <td>{{ user.id }}</td>
-                            <td>{{ user.Full_name }}</td>
+                            <td>
+                                <a href="{{ url_for('admin_user_reservations', user_id=user.id) }}">
+                                    {{ user.Full_name }}
+                                </a>
+                            </td>
                             <td>{{ user.Email }}</td>
                             <td>{{ user.Mobile }}</td>
                             <td>{{ user.Gender }}</td>
