@@ -22,8 +22,20 @@
             <tbody>
                 {% for res in reservations %}
                 <tr>
-                    <td>{{ res.spot.lot.parking_location_name }}</td>
-                    <td>{{ res.spot.spot_number }}</td>
+                    <td>
+                        {% if res.spot and res.spot.lot %}
+                            {{ res.spot.lot.parking_location_name }}
+                        {% else %}
+                            <span class="text-danger">Lot Missing</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if res.spot %}
+                            {{ res.spot.spot_number }}
+                        {% else %}
+                            <span class="text-danger">Spot Deleted</span>
+                        {% endif %}
+                    </td>
                     <td>{{ res.vehicle_number }}</td>
                     <td>{{ res.check_in.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>
@@ -53,3 +65,4 @@
     {% endif %}
 </div>
 {% endblock %}
+
