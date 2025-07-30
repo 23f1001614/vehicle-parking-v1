@@ -85,6 +85,13 @@
                     <a href="{{ url_for('view_users') }}" class="btn btn-info">View All Users</a>
                 </div>
             </div>
+            <br>
+            <div class="card text-white bg-dark">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Income</h5>
+                <h3>₹{{ total_income or "0.00" }}</h3>
+            </div>
+        </div>
         </div>
     </div>
 </div>

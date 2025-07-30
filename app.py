@@ -161,10 +161,11 @@ def admin_dashboard():
     available_spots = ParkingSpot.query.filter_by(status='A').count()
     occupied_spots = ParkingSpot.query.filter_by(status='O').count()
     users_count = User.query.filter_by(Role="User").count()
+    total_income = db.session.query(db.func.sum(Reservation.amount_paid)).scalar() or 0.0
     return render_template("admin/admin_dashboard.html", lots=lots,
                            available_spots=available_spots,
                            occupied_spots=occupied_spots,
-                           users_count=users_count)
+                           users_count=users_count, total_income=total_income)
 
 
 @app.route("/admin/create_lot", methods=['GET', 'POST'])
